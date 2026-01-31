@@ -1,3 +1,5 @@
+# default values for a local server
+# docker run -it --name spire --rm -d -p 27015:27015 -p 27015:27015/udp -p 27025:27025 spiretf/docker-spire-server
 rcon:
   host: 127.0.0.1:27015
   password: rcon
@@ -12,5 +14,5 @@ server:
   password: password
 
 logger:
-  level: debug
+  level: info
   report-timestamp: true
