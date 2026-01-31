@@ -1,0 +1,13 @@
+rcon:
+  host: 127.0.0.1:27015
+  password: rcon
+
+http:
+  port: 6969
+  read-timeout: 45s
+  write-timeout: 45s
+  idle-timeout: 45s
+
+logger:
+  level: debug
+  report-timestamp: true

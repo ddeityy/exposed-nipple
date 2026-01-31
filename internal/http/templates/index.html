@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>{{.Hostname}} Server Status</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                text-align: center;
+                background-color: #333;
+                padding: 20px;
+                margin: 0;
+                box-sizing: border-box;
+                width: 100%;
+                height: 100vh;
+                overflow: hidden;
+                color: white;
+            }
+
+            button {
+                background-color: #4CAF50;
+                color: white;
+                padding: 14px 20px;
+                margin: 20px;
+                border: none;
+                cursor: pointer;
+                width: 10%;
+                font-size: 16px;
+                border-radius: 5px;
+            }
+
+            button:hover {
+                opacity: 0.8;
+            }
+
+            ul {
+                list-style-type: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            li {
+                margin-bottom: 10px;
+            }
+
+            span {
+                font-weight: bold;
+            }
+        </style>
+    </head>
+
+    <body>
+        <button onclick="window.location.href='{{.Connect}}'">Connect</button>
+        <ul style="list-style-type: none; padding: 0;">
+            <li><span style="font-weight: bold">{{.Hostname}}</span></li>
+            <li><span style="font-weight: bold">{{.SDR}}</span></li>
+            <li><span style="font-weight: bold">{{.Map}}</span></li>
+            <li><span style="font-weight: bold">{{.Players}} Players</span></li>
+        </ul>
+    </body>
+
+</html>
