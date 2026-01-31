@@ -2,35 +2,35 @@ package provider
 
 import (
 	"nipple/internal/config"
-	"nipple/internal/rcon"
+	"nipple/internal/manager"
 
 	"github.com/charmbracelet/log"
 )
 
 type Provider struct {
-	lg         *log.Logger
-	rconClient *rcon.Client
-	cfg        *config.Config
+	lg          *log.Logger
+	connManager manager.ConnectManager
+	cfg         *config.Config
 }
 
-func New(cfg *config.Config, rconClient *rcon.Client, lg *log.Logger) Provider {
+func New(cfg *config.Config, connManager manager.ConnectManager, lg *log.Logger) Provider {
 	return Provider{
-		lg:         lg,
-		rconClient: rconClient,
-		cfg:        cfg,
+		lg:          lg,
+		connManager: connManager,
+		cfg:         cfg,
 	}
 }
 
-func (p *Provider) Close() {
-	p.rconClient.Close()
+func (p *Provider) Close() error {
+	return p.connManager.Close()
+}
+
+func (p *Provider) ConnManager() manager.ConnectManager {
+	return p.connManager
 }
 
 func (p *Provider) Logger() *log.Logger {
 	return p.lg
-}
-
-func (p *Provider) RconClient() *rcon.Client {
-	return p.rconClient
 }
 
 func (p *Provider) Config() *config.Config {

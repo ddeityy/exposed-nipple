@@ -25,13 +25,13 @@ func NewClient(cfg config.RCON, lg *log.Logger) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) GetServerStatus() (Status, error) {
-	out, err := c.conn.Execute(status)
+func (c *Client) GetServerStatus() (string, error) {
+	out, err := c.conn.Execute("status")
 	if err != nil {
-		return Status{}, err
+		return "", err
 	}
 
-	return parseStatus(out), nil
+	return out, nil
 }
 
 func (c *Client) Close() error {

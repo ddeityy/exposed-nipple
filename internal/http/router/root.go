@@ -8,7 +8,7 @@ import (
 
 func RegisterRootHandler(provider provider.Provider, root *http.ServeMux) {
 	handler := handler.NewRootHandler(
-		provider.RconClient(),
+		provider.ConnManager(),
 		provider.Logger(),
 	)
 	root.HandleFunc("GET /", handler.GetServerStatus)

@@ -8,6 +8,9 @@ http:
   write-timeout: 45s
   idle-timeout: 45s
 
+server:
+  password: password
+
 logger:
   level: debug
   report-timestamp: true

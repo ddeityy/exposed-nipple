@@ -11,6 +11,7 @@ type Config struct {
 	RCON   RCON   `yaml:"rcon"`
 	HTTP   HTTP   `yaml:"http"`
 	Logger Logger `yaml:"logger"`
+	Server Server `yaml:"server"`
 }
 
 type RCON struct {
@@ -28,6 +29,10 @@ type HTTP struct {
 type Logger struct {
 	LogLevel        string `yaml:"level"`
 	ReportTimestamp bool   `yaml:"report-timestamp"`
+}
+
+type Server struct {
+	Password string `yaml:"password" env:"SERVER_PASSWORD"`
 }
 
 func Load(fileName string) (*Config, error) {

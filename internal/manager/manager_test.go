@@ -1,6 +1,9 @@
-package rcon
+package manager
 
-import "testing"
+import (
+	"nipple/internal/config"
+	"testing"
+)
 
 const testString = `
 hostname: Spire Server
@@ -19,6 +22,8 @@ edicts  : 416 used of 2048 max
 `
 
 func TestParseStatus(t *testing.T) {
+	connManager := NewConnectManager(nil, config.Server{}, nil)
+
 	testCases := []struct {
 		name     string
 		input    string
@@ -38,7 +43,7 @@ func TestParseStatus(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := parseStatus(tc.input)
+			got := connManager.ParseStatus(tc.input)
 			if got != tc.expected {
 				t.Errorf("got %v, expected %v", got, tc.expected)
 			}

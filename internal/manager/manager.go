@@ -1,8 +1,10 @@
-package rcon
+package manager
 
 import (
 	"io"
 	"net/http"
+	"nipple/internal/config"
+	"nipple/internal/rcon"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,33 +13,54 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-type command string
-
-const (
-	status string = "status"
-)
-
-type Status struct {
-	Hostname          string
-	SDR               string
-	sdrPassword       string
-	Connect           string
-	Map               string
-	Players           int
+type ConnectManager struct {
+	rconClient        *rcon.Client
 	redirect          string
 	redirectTimestamp time.Time
+	serverPassword    string
+	lg                *log.Logger
+	Status
 }
 
-func (s Status) GetRedirectIP() string {
-	if time.Since(s.redirectTimestamp) < 24*time.Hour {
-		return s.redirect
+func NewConnectManager(rconClient *rcon.Client, cfg config.Server, lg *log.Logger) ConnectManager {
+	return ConnectManager{
+		rconClient:     rconClient,
+		serverPassword: cfg.Password,
+		lg:             lg,
+	}
+}
+
+func (c ConnectManager) Close() error {
+	return c.rconClient.Close()
+}
+
+type Status struct {
+	Hostname string
+	SDR      string
+	Connect  string
+	Map      string
+	Players  int
+}
+
+func (c ConnectManager) GetServerStatus() (Status, error) {
+	rawStatus, err := c.rconClient.GetServerStatus()
+	if err != nil {
+		return Status{}, err
+	}
+
+	return c.ParseStatus(rawStatus), nil
+}
+
+func (c ConnectManager) GetRedirectIP() string {
+	if time.Since(c.redirectTimestamp) < 24*time.Hour {
+		return c.redirect
 	}
 
 	client := http.Client{}
 	resp, err := client.Get("https://potato.tf/api/serverstatus/redirect")
 	if err != nil {
 		log.Errorf("can't get redirect IP: %s", err)
-		return s.redirect
+		return c.redirect
 	}
 
 	defer resp.Body.Close()
@@ -45,19 +68,19 @@ func (s Status) GetRedirectIP() string {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Errorf("can't read response body: %s", err)
-		return s.redirect
+		return c.redirect
 	}
 
-	s.redirectTimestamp = time.Now()
+	c.redirectTimestamp = time.Now()
 
 	return string(body)
 }
 
-func (s Status) SteamConnectURL() string {
-	return "steam://connect/" + s.GetRedirectIP() + "/" + s.sdrPassword + "/dest=" + s.SDR
+func (c ConnectManager) SteamConnectURL() string {
+	return "steam://connect/" + c.GetRedirectIP() + "/" + c.serverPassword + "/dest=" + c.SDR
 }
 
-func parseStatus(s string) Status {
+func (c ConnectManager) ParseStatus(s string) Status {
 	res := Status{}
 
 	for line := range strings.SplitSeq(s, "\n") {
@@ -84,8 +107,7 @@ func parseStatus(s string) Status {
 		}
 	}
 
-	res.sdrPassword = "password"
-	res.Connect = res.SteamConnectURL()
+	c.Connect = c.SteamConnectURL()
 
 	return res
 }

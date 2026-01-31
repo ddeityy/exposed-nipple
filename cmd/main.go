@@ -8,6 +8,7 @@ import (
 	"nipple/internal/config"
 	server "nipple/internal/http"
 	"nipple/internal/logger"
+	"nipple/internal/manager"
 	"nipple/internal/provider"
 	"nipple/internal/rcon"
 	"os"
@@ -31,7 +32,9 @@ func main() {
 		lg.Fatalf("could not establish rcon connection: %s", err)
 	}
 
-	prov := provider.New(cfg, rconClient, lg)
+	connManager := manager.NewConnectManager(rconClient, cfg.Server, lg)
+
+	prov := provider.New(cfg, connManager, lg)
 	server := server.New(prov)
 
 	errChan := make(chan error)
