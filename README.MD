@@ -1,4 +1,4 @@
-# Nipple exposer (SDR)
+# Exposed nipple (via SDR)
 
 ## Building
 
