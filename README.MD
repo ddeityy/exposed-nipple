@@ -2,7 +2,7 @@
 
 ## Building
 
-`go build -o nipple`
+`go build -o nipple ./cmd/main.go`
 
 ## Running
 
