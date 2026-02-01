@@ -1,8 +1,13 @@
 package config
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"os"
 	"time"
+
+	_ "embed"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -11,7 +16,6 @@ type Config struct {
 	RCON   RCON   `yaml:"rcon"`
 	HTTP   HTTP   `yaml:"http"`
 	Logger Logger `yaml:"logger"`
-	Server Server `yaml:"server"`
 }
 
 type RCON struct {
@@ -31,16 +35,22 @@ type Logger struct {
 	ReportTimestamp bool   `yaml:"report-timestamp"`
 }
 
-type Server struct {
-	Password string `yaml:"password" env:"SERVER_PASSWORD"`
-}
+//go:embed config.yaml
+var configBytes []byte
 
 func Load(fileName string) (*Config, error) {
 	cfg := Config{}
 
 	err := cleanenv.ReadConfig(fileName, &cfg)
 	if err != nil {
-		return nil, fmt.Errorf("cleanenv.ReadConfig: %w", err)
+		if !errors.Is(err, os.ErrNotExist) {
+			return nil, fmt.Errorf("cleanenv.ReadConfig: %w", err)
+		}
+		reader := bytes.NewReader(configBytes)
+		err = cleanenv.ParseYAML(reader, &cfg)
+		if err != nil {
+			return nil, fmt.Errorf("cleanenv.ParseYAML: %w", err)
+		}
 	}
 
 	err = cleanenv.ReadEnv(&cfg)

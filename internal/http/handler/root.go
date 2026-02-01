@@ -1,12 +1,18 @@
 package handler
 
 import (
+	"embed"
 	"net/http"
 	"nipple/internal/manager"
 	"text/template"
 
 	"github.com/charmbracelet/log"
+
+	_ "embed"
 )
+
+//go:embed templates
+var templates embed.FS
 
 type rootHandler struct {
 	connManager manager.ConnectManager
@@ -28,8 +34,8 @@ func (h *rootHandler) GetServerStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl := template.Must(template.ParseFiles("internal/http/templates/index.html"))
-	err = tmpl.Execute(w, status)
+	tmpl := template.Must(template.ParseFS(templates, "templates/*.html"))
+	err = tmpl.ExecuteTemplate(w, "index.html", status)
 	if err != nil {
 		h.lg.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

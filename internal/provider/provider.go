@@ -21,10 +21,6 @@ func New(cfg *config.Config, connManager manager.ConnectManager, lg *log.Logger)
 	}
 }
 
-func (p *Provider) Close() error {
-	return p.connManager.Close()
-}
-
 func (p *Provider) ConnManager() manager.ConnectManager {
 	return p.connManager
 }

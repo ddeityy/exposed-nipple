@@ -22,7 +22,7 @@ edicts  : 416 used of 2048 max
 `
 
 func TestParseStatus(t *testing.T) {
-	connManager := NewConnectManager(nil, config.Server{}, nil)
+	connManager := NewConnectManager(config.Config{}, nil)
 
 	testCases := []struct {
 		name     string

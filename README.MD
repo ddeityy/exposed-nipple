@@ -17,9 +17,6 @@ rcon:
 
 http:
   port: port
-
-server:
-  password: server_password
 ```
 
 Or pass through env variables
@@ -28,5 +25,4 @@ Or pass through env variables
 RCON_HOST=ip:port
 RCON_PASSWORD=password
 HTTP_SERVER_PORT=port
-SERVER_PASSWORD=password
 ```

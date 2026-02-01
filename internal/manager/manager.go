@@ -1,20 +1,21 @@
 package manager
 
 import (
-	"io"
-	"net/http"
+	"errors"
+	"fmt"
 	"nipple/internal/config"
 	"nipple/internal/rcon"
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/charmbracelet/log"
 )
 
 type ConnectManager struct {
-	rconClient        *rcon.Client
+	cfg               config.Config
 	redirect          string
 	redirectTimestamp time.Time
 	serverPassword    string
@@ -22,62 +23,47 @@ type ConnectManager struct {
 	Status
 }
 
-func NewConnectManager(rconClient *rcon.Client, cfg config.Server, lg *log.Logger) ConnectManager {
+func NewConnectManager(cfg config.Config, lg *log.Logger) ConnectManager {
 	return ConnectManager{
-		rconClient:     rconClient,
-		serverPassword: cfg.Password,
-		lg:             lg,
+		cfg: cfg,
+		lg:  lg,
 	}
 }
 
-func (c ConnectManager) Close() error {
-	return c.rconClient.Close()
-}
-
 type Status struct {
+	Status   string
 	Hostname string
+	Direct   string
 	SDR      string
-	Connect  string
 	Map      string
 	Players  int
 }
 
 func (c ConnectManager) GetServerStatus() (Status, error) {
-	rawStatus, err := c.rconClient.GetServerStatus()
+	rconClient, err := rcon.NewClient(c.cfg.RCON, c.lg)
+	if err != nil {
+		if errors.Is(err, syscall.ECONNREFUSED) || errors.Is(err, syscall.EHOSTUNREACH) {
+			c.lg.Errorf("server %s unreachable, returning default status", c.cfg.RCON.Host)
+			return Status{
+				Status:   "Unreachable",
+				Hostname: "N/A",
+				Direct:   c.cfg.RCON.Host,
+				SDR:      "N/A",
+				Map:      "N/A",
+				Players:  0,
+			}, nil
+		}
+		return Status{}, fmt.Errorf("could not establish rcon connection: %w", err)
+	}
+
+	defer rconClient.Close()
+
+	rawStatus, err := rconClient.GetServerStatus()
 	if err != nil {
 		return Status{}, err
 	}
 
 	return c.ParseStatus(rawStatus), nil
-}
-
-func (c ConnectManager) GetRedirectIP() string {
-	if time.Since(c.redirectTimestamp) < 24*time.Hour {
-		return c.redirect
-	}
-
-	client := http.Client{}
-	resp, err := client.Get("https://potato.tf/api/serverstatus/redirect")
-	if err != nil {
-		log.Errorf("can't get redirect IP: %s", err)
-		return c.redirect
-	}
-
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Errorf("can't read response body: %s", err)
-		return c.redirect
-	}
-
-	c.redirectTimestamp = time.Now()
-
-	return string(body)
-}
-
-func (c ConnectManager) SteamConnectURL() string {
-	return "steam://connect/" + c.GetRedirectIP() + "/" + c.serverPassword + "/dest=" + c.SDR
 }
 
 func (c ConnectManager) ParseStatus(s string) Status {
@@ -107,7 +93,8 @@ func (c ConnectManager) ParseStatus(s string) Status {
 		}
 	}
 
-	c.Connect = c.SteamConnectURL()
+	res.Status = "Online"
+	res.Direct = c.cfg.RCON.Host
 
 	return res
 }

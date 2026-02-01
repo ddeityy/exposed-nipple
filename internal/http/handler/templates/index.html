@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+    <script>
+        function copySDRConnectString() {
+            var connectString = "connect {{.SDR}}; password ";
+            navigator.clipboard.writeText(connectString);
+        }
+    </script>
+    <script>
+        function copyDirectConnectString() {
+            var connectString = "connect {{.Direct}}; password ";
+            navigator.clipboard.writeText(connectString);
+        }
+    </script>
+
+    <head>
+        <title>{{.Hostname}} Server Status</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                text-align: left;
+                background-color: #333;
+                padding: 20px;
+                margin: 0;
+                box-sizing: border-box;
+                width: 100%;
+                height: 100vh;
+                overflow: hidden;
+                color: white;
+            }
+
+            ul {
+                list-style-type: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            li {
+                margin-bottom: 10px;
+                font-size: 1.5rem;
+            }
+
+            button {
+                background-color: transparent;
+                border: none;
+                cursor: pointer;
+                font-size: 1.5rem;
+            }
+
+            button:hover {
+                opacity: 0.8;
+            }
+        </style>
+    </head>
+
+    <body>
+        <ul style="list-style-type: none; padding: 0;">
+            <li>
+                {{if eq .Status "Online"}}
+                <span style="color: green">{{.Status}}</span>
+                {{else}}
+                <span style="color: red">{{.Status}}</span>
+                {{end}}
+            </li>
+            <li><span>Hostname: {{.Hostname}}</span></li>
+            {{if eq .Status "Online"}}
+            <li><span>SDR connect: <b>connect {{.SDR}}; password &ltpassword></b> <button
+                        onclick="copySDRConnectString()">📋</button> </span></li>
+            <li><span>Direct connect: <b>connect {{.Direct}}; password &ltpassword></b> <button
+                        onclick="copyDirectConnectString()">📋</button> </span></li>
+            {{else}}
+            <li><span>SDR connect: N/A</span></li>
+            <li><span>Direct connect: N/A</span></li>
+            {{end}}
+            <li><span>Map: {{.Map}}</span></li>
+            <li><span>Players: {{.Players}}</span></li>
+        </ul>
+    </body>
+
+</html>

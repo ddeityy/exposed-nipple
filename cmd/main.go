@@ -10,7 +10,6 @@ import (
 	"nipple/internal/logger"
 	"nipple/internal/manager"
 	"nipple/internal/provider"
-	"nipple/internal/rcon"
 	"os"
 	"os/signal"
 	"syscall"
@@ -27,12 +26,7 @@ func main() {
 
 	lg := logger.New(cfg.Logger)
 
-	rconClient, err := rcon.NewClient(cfg.RCON, lg)
-	if err != nil {
-		lg.Fatalf("could not establish rcon connection: %s", err)
-	}
-
-	connManager := manager.NewConnectManager(rconClient, cfg.Server, lg)
+	connManager := manager.NewConnectManager(*cfg, lg)
 
 	prov := provider.New(cfg, connManager, lg)
 	server := server.New(prov)
@@ -65,9 +59,4 @@ func main() {
 		return
 	}
 	lg.Infof("server stopped")
-
-	if err := rconClient.Close(); err != nil {
-		lg.Errorf("RCON client close error: %s", err)
-	}
-	lg.Infof("RCON client closed")
 }
